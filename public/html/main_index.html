@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+　　<meta name="MobileOptimized" content="320">
+
+　　<meta name="format-detection" content="telephone=no">
+
+　　<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>NodeServerTest</title>
+    <link href="../stylesheets/main_index.css" rel="stylesheet">
+    <style>
+        #FloatWindow {position:fixed;z-index:10;height: 10em;width:10em;left: 0%;top: 0%;background-color: #ff2a00}
+    </style>
+</head>
+<body>
+
+<!--注册Demo-->
+<h1>注册Demo</h1>
+<div id="SignFormContainer"></div>
+<hr>
+<!--登陆Demo-->
+<h1>登陆Demo</h1>
+<div id="LoginFormContainer"></div>
+<hr>
+<!--上传文件Demo-->
+<h1>上传文件Demo</h1>
+<div id="UploadFormContainer"></div>
+<hr>
+<h1>照片墙</h1>
+<div id="PhotoWall"></div>
+<hr>
+<!--浮动框（广告框）-->
+<div id="FloatWindowContainer"></div>
+
+<!--底部导航条-->
+<div id="BottomNavBarContainer"></div>
+<script type="text/javascript" src="lib/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="lib/React/react.min.js"></script>
+<script type="text/javascript" src="lib/React/JSXTransformer.js"></script>
+<script type="text/javascript" src="lib/plupload.full.min.js"></script>
+<script type="text/jsx">
+var SignForm=React.createClass({
+    handleSubmit:function(e){
+        e.preventDefault();
+        console.log("handleSubmit");
+        var data=$("#SignForm").serialize();
+        console.log("Data is [%s]",data);
+        $.post("http://115.28.65.99:3000/sign",data,function(res){
+            console.log(JSON.stringify(res));
+            alert(JSON.stringify(res));
+        });
+    },
+    render:function(){
+        return (
+                <form id="SignForm" onSubmit={this.handleSubmit}>
+                    <input name="nickname" type="text" placeholder="注册名" required="required"></input><br/><br/>
+                    <input name="password" type="password" placeholder="密码" required="required"></input><br/><br/>
+                    <input name="phone" type="tel" placeholder="电话" ></input><br/><br/>
+                    <input type="submit" value="注册"></input>
+                </form>
+                )
+    }
+});
+var LoginForm=React.createClass({
+    getInitialState:function(){
+        return {data:[],LogInfo:[]};
+    },
+    componentDidMount:function(){
+        this.setState({LogInfo:"您尚未登录"});
+
+    },
+    handleLogin:function(e){
+        e.preventDefault();
+        console.log("handleLogin");
+        var data=$("#LoginForm").serialize();
+        $.post("/login",data,function(res){
+            if(res.code==1){
+                this.setState({LogInfo:res.info});
+            }else{
+                this.setState({LogInfo:"登录失败，用户名或密码不正确!"});
+            }
+        }.bind(this));
+    },
+    render:function(){
+        return(
+                <div>
+                    <p4>{this.state.LogInfo}</p4><br/><br/>
+                    <form id="LoginForm" onSubmit={this.handleLogin}>
+                        <input placeholder="登录名" type="text" required="required" name="nickname" /><br/><br/>
+                        <input placeholder="密码" type="password" required="required" name="password" /><br/><br/>
+                        <input type="submit" value="登录" />
+                    </form>
+                </div>
+        )
+    }
+});
+var UploadForm=React.createClass({
+    handleUpload:function(e){
+        //e.preventDefault();
+        var uploader=new plupload.Uploader({
+            browse:"File",
+            url:"/getImage"
+        });
+        uploader.init();
+        console.log("handleUpload");
+        uploader.start();
+    },
+    render:function(){
+        return (
+                <form  onSubmit={this.handleUpload} id="UploadForm" action="http://115.28.65.99:3000/upload"  encType="multipart/form-data" method="post">
+                    <input id="File" type="file" required="required" name="file1"></input>
+                    <input type="submit" value="上传"></input>
+                </form>
+        )
+    }
+});
+var PhotoWall=React.createClass({
+    getInitialState:function(){
+        return {data:[],imageBox:[]};
+    },
+    componentDidMount:function(){
+        this.handleAjax();
+    },
+    handleAjax:function(){
+        $.ajax({url:"/getImage",type:"post",data:{"user_id":1},
+            success:function(res){
+                this.setState({data:res});
+                console.log(this.state.data);
+                var imgs=this.state.data.data.map(function(data){
+                    console.log(data.image_src);
+                    return (
+                            <img src={"../"+data.image_src} />
+                    );
+                });
+                this.setState({imageBox:imgs});
+            }.bind(this)
+        });
+    },
+    render:function(){
+        var imageNodes=this.state.data;
+        console.log(imageNodes);
+        return (
+                <div className="PhotoFrame">
+                    {this.state.imageBox}
+                </div>
+        )
+    }
+});
+var FloatWindow=React.createClass({
+    getDocument:function(){
+        $.get("/getDocument",function(res){
+            //console.log(JSON.stringify(res));
+            $("#FloatWindow").html(res.html);
+        });
+    },
+    render:function(){
+        //var content=this.getDocument();
+        return (
+                <div onClick={this.getDocument} id="FloatWindow"></div>
+        )
+    }
+});
+
+var BottomNavBar=React.createClass({
+    render:function(){
+        return (
+                <div className="BottomNavBar">
+                    <ul>
+                        <li>栏目001</li>
+                        <li><a href="party.html">聚会吧</a></li>
+                    </ul>
+                </div>
+        )
+    }
+});
+React.render(<SignForm />,document.getElementById("SignFormContainer"));
+React.render(<UploadForm />,document.getElementById("UploadFormContainer"));
+React.render(<PhotoWall />,document.getElementById("PhotoWall"));
+React.render(<LoginForm />,document.getElementById("LoginFormContainer"));
+React.render(<FloatWindow />,document.getElementById("FloatWindowContainer"));
+React.render(<BottomNavBar />,document.getElementById("BottomNavBarContainer"));
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+body {background-color: bisque;text-align: center}
+
+#PhotoWall img {width:90%;padding: 1em;background-color: burlywood;margin-bottom: 1em}
+.PhotoFrame {width: 90%;overflow: hidden}
+
+form {background-color: #48BDA1;padding: 1em 1em;border-radius: 1em}
+
+input {width: 80%;height: 4em}
+
+.BottomNavBar{position: fixed;top:90%;width: 100%;height: 3em;background-color: #ff2a00}
+.BottomNavBar li{float: left;list-style: none;width: 25%}
+

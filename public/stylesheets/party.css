@@ -1,0 +1,30 @@
+body {font-size:0.75em;margin:0em;text-align: center;font: 400 18px/1.62 "Georgia", "Xin Gothic", "Hiragino Sans GB", "Droid Sans Fallback", "Microsoft YaHei", sans-serif;}
+nav {background-image: url(../src/img/nav_bg1.jpg);background-size:cover;background-position:center 50%;margin-bottom: 1em}
+.navbar {list-style:none;margin:0em;font-size: 1em;padding: 0em}
+.navbar li{display:inline-block}
+.navbar li a{padding: 0em 0.5em;line-height: 3em;text-decoration: none;color: wheat;cursor: pointer}
+
+form {background-color: white;padding: 1em 1em;border-radius: 1em;border: 2px solid black}
+
+/*input {width: 80%;height: 3em;}*/
+.SubmitBtn{    background: linear-gradient(#428bca,#2a6496);}
+.ShowParty{margin: 0em 2em;padding: 1em 1em 2em 1em;background-color: #fff}
+/*Show Party Component*/
+.ShowParty span {margin: 0em}
+.PartyInfo {width: 10em}
+.TableHeader {background-color:rgb(255, 58, 0);color:white }
+.ShowBtn{height: 2em;border-radius: 2em;background-color: #48BDA1;padding-top: 0.5em}
+.HideBtn{background-color:red}
+
+hr {margin-top: 1em}
+h1{font-family: "Helvetica Neue", Helvetica, Arial, "Hiragino Sans GB", "Hiragino Sans GB W3", "WenQuanYi Micro Hei", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;}
+
+.my_row{margin: 1em }
+.ShowParty_info{text-align: initial}
+.AttendList{list-style: none}
+.AttendList li{float: left;margin: 0em 1em}
+.AttendList span {display: inline-block;margin: 0em 1em}
+
+.PartyInfoTable{font-size: 0.75em}
+.PartyInfoTable td {min-width: 4em}
+

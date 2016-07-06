@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+　　<meta name="MobileOptimized" content="320">
+　　<meta name="format-detection" content="telephone=no">
+　　<!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="lib/Bootstrap/bootstrap-3.3.5-dist/css/bootstrap.min.css">
+    <!-- 可选的Bootstrap主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="lib/Bootstrap/bootstrap-3.3.5-dist/css/bootstrap-theme.min.css">
+    <link href="../stylesheets/party.css" rel="stylesheet">
+    <title>聚会吧~</title>
+    <style>
+        .headerLogo img{width: 100%}
+        .PartyTitle {text-align:initial;color: rgb(255, 58, 0);}
+        .PartyTitle p {font-size: 2em}
+        .AttendCount {width: 6em;font-size:0.5em;background: rgb(255, 58, 0);margin-left: auto;margin-top: 0.5em;margin-bottom: 0.5em;border:1px solid whitesmoke}
+        .AttendCount_title{color: white}
+        .AttendCount_count{background-color: white}
+    </style>
+</head>
+<body>
+<header style="background-image: url(../src/img/bg2.jpg);background-size: cover;height: 10em">
+
+</header>
+<nav>
+    <div class="container" style="padding: 0em">
+        <div class="row" style="padding: 0em">
+            <div class="col-lg-12 col-sm-12 col-md-12">
+                <ul class="navbar">
+                    <li><a onclick="createBuildPartyFrom();">创建聚会</a></li>
+                    <li onclick="createShowParty();"><a>查看</a></li>
+                    <li><a>管理</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div id="FromContainer">
+
+    </div>
+
+
+    <!--<table class="table table-striped">-->
+        <!--<tr style="background-color:rgb(255, 58, 0);color:white ">-->
+            <!--<td>描述</td>-->
+            <!--<td>每人费用</td>-->
+            <!--<td>固定费用</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>场地</td>-->
+            <!--<td>30</td>-->
+            <!--<td>300</td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>场地</td>-->
+            <!--<td>30</td>-->
+            <!--<td>300</td>-->
+        <!--</tr>-->
+    <!--</table>-->
+    <!--创建一次聚会-->
+
+    <div class="my_row" id="BuildPartyContainer"></div>
+    <hr>
+    <!--暂时聚会信息-->
+    <div id="ShowPartyContainer"></div>
+    <hr>
+    <div class="my_row" id="AttendFormContainer"></div>
+    <div class="my_row" id="ParticipantListContainer"></div>
+</div>
+<script type="text/javascript" src="lib/jquery-1.9.1.min.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="lib/Bootstrap/bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="lib/React/react.min.js"></script>
+<script type="text/javascript" src="lib/React/JSXTransformer.js"></script>
+<script type="text/jsx">
+    var BuildPartyForm=React.createClass({
+        handleSubmit:function(e){
+            e.preventDefault();
+            var data=$("#CreatePartyForm").serialize();
+            $.post("/createParty",data,function(res){
+                if(res.code==1)
+                {
+                    alert("创建Party成功啦!请牢记聚会ID:");
+                }else{
+                    alert(JSON.stringify(res));
+                }
+            });
+        },
+
+        render:function(){
+            return (
+                    <div>
+
+                        <form  id="CreatePartyForm" onSubmit={this.handleSubmit}>
+                            <input className="form-control" name="PartyName" type="text"  placeholder="起个响亮的Party名吧！"/><br/>
+                            <input className="form-control" name="PartyDescription" type="text" placeholder="来点详细描述呀~"/><br/>
+                            <input className="form-control" name="PartyLocale" type="text" placeholder="地点"/><br/>
+                            <input className="form-control" name="PartyDate" type="date" placeholder="什么时间呀"/><br/>
+                            <input className="form-control" name="PartyAverCost" type="number" placeholder="预计人均"/><br/>
+                            <input className="SubmitBtn form-control" type="submit" value="召集小伙伴们High起来！" />
+                        </form>
+                    </div>
+
+            )
+        }
+    });
+    var ShowParty=React.createClass({
+        getInitialState:function(){
+            return {data:{"party_id":1},list:[]};
+        },
+        componentDidMount:function(){
+            this.getPartyInfo(this.props.PartyId);
+        },
+        getPartyInfo:function(PartyId){
+            console.log(PartyId);
+            $.post('/queryParty',{"party_id":PartyId},function(res){
+                console.log(JSON.stringify(res));
+                if(res.code==1){
+                    this.setState({data:res.data[0]});
+                    $("#handleParticipantList").click();
+                }else{
+                    alert("PartyId=["+PartyId+"] 无此聚会信息!");
+                }
+            }.bind(this));
+            $.post("/getParticipants",{"party_id":PartyId},function(res){
+                console.log(JSON.stringify(res));
+                this.setState({list:res.data});
+
+                //this.setState({data:participants});
+            }.bind(this));
+        },
+        handleSubmit:function(e){
+            e.preventDefault();
+            this.getPartyInfo($("#query_party_id").val());
+        },
+        createAttendList:function(){
+            var AttendList="";
+        },
+
+        render:function(){
+            return (
+                    <div  className="">
+                        <div>
+                            <div className="PartyTitle">
+                            <div>聚会计划</div>
+                            <p >{this.state.data.party_name}</p>
+                            </div>
+                            <div className="AttendCount" >
+                            <div className="AttendCount_title">人数</div>
+                            <div className="AttendCount_count">{this.state.list.length}</div>
+                            </div>
+                            <table className="table PartyInfoTable">
+                            <tr className="TableHeader">
+                                <td>描述</td>
+                                <td>详情</td>
+                            </tr>
+
+                            <tr><td>简述</td><td>{this.state.data.party_description}</td></tr>
+                            <tr><td>地点</td><td>{this.state.data.party_locale}</td></tr>
+                            <tr>
+                                <td>人均</td>
+                                <td>￥{this.state.data.party_avercost}</td>
+                            </tr>
+                            <tr>
+                                <td>时间</td>
+                                <td>{this.state.data.party_date}</td>
+                            </tr>
+                            <tr className="TableHeader">
+                                    <td>姓名</td>
+                                    <td>电话</td>
+                            </tr>
+                            {this.state.list.map(function(data){
+                                return (<tr><td>{data.participant_name}</td><td>{data.participant_phone}</td></tr>);
+                            })}
+
+                            </table>
+                        </div>
+
+                        <div  className="my_row ShowBtn">查询聚会</div>
+                        <form style={{display:"none"}} id="QueryPartyForm" onSubmit={this.handleSubmit}>
+                            <input className="form-control" id="query_party_id" type="number" name="party_id" placeholder="请输入聚会ID" /><br/>
+                            <input className="SubmitBtn form-control" type="submit" value="查询聚会信息" />
+                        </form>
+                    </div>
+            )
+        }
+    });
+    //废弃
+   /*<div className="ShowParty">
+        <div><img></img></div>
+        <h1>{this.state.data.party_name}</h1>
+        <div className="ShowParty_info">
+            聚会ID：{this.state.data.party_id}
+            <div><span><b>详细信息：</b></span><span class="PartyInfo">{this.state.data.party_description}</span></div>
+            <div><span><b>聚会地址：</b></span><span class="PartyInfo">{this.state.data.party_locale}</span></div>
+            <div><span><b>聚会时间：</b></span><span class="PartyInfo">{this.state.data.party_date}</span></div>
+            <div><span><b>人均消费：</b></span><span class="PartyInfo">{this.state.data.party_avercost}</span></div>
+            <ParticipantList party_id={this.state.data.party_id} />
+        </div>
+    </div>*/
+    var AttendForm=React.createClass({
+        handleSubmit:function(e){
+            e.preventDefault();
+            var data=$("#AttendPartyForm").serialize();
+            $.post("/attendParty",data,function(res){
+
+            });
+        },
+
+        render:function(){
+            return (
+                    <div>
+                        <div  className="ShowBtn">参加聚会</div>
+                        <form style={{display:"none"}} id="AttendPartyForm" onSubmit={this.handleSubmit}>
+                            <input className="form-control" id="attend_party_id" type="number" name="party_id" placeholder="请输入聚会ID" /><br/>
+                            <input className="form-control" type="text" name="participant_name" placeholder="您的姓名" /><br/>
+                            <input className="form-control" type="tel" name="participant_phone" placeholder="联系手机" /><br/>
+                            <input className="SubmitBtn form-control" type="submit" value="参加聚会!" />
+                        </form>
+                    </div>
+            )
+        }
+    });
+   var ParticipantList=React.createClass({
+        getInitialState:function(){
+            return {data:[]};
+        },
+        componentDidMount:function(){
+            this.handleAjax();
+            console.log("participant list did...");
+        },
+        handleAjax:function(){
+            var data={"party_id":this.props.party_id};
+            console.log("Party_id is [%d]",this.props.party_id)
+            $.post("/getParticipants",data,function(res){
+                console.log(JSON.stringify(res))
+                var participants=res.data.map(function(data) {
+                    console.log(data.participant_name);
+                    return (
+                            <span>{data.participant_name}</span>
+                    );
+                });
+                this.setState({data:participants});
+            }.bind(this));
+            $.post("/disAttendParty","",function(res){});
+        },
+        render:function(){
+            return (
+                    <div>
+                        <div id="handleParticipantList" onClick={this.handleAjax} style={{display:"none"}}></div>
+                        <div className="AttendList"><b>已报名：</b>{this.state.data}</div>
+                    </div>
+            )
+        }
+    });
+    //React.render(<BuildPartyForm />,document.getElementById("BuildPartyContainer"));
+    React.render(<ShowParty id="ShowParty" PartyId="1" />,document.getElementById("ShowPartyContainer"));
+    React.render(<AttendForm  />,document.getElementById("AttendFormContainer"));
+    function createBuildPartyFrom(){
+        //alert(11);
+        React.render(<BuildPartyForm />,document.getElementById("FromContainer"));
+    }
+    function createShowParty(){
+        //alert(11);
+        React.render(<ShowParty PartyId="1" />,document.getElementById("FromContainer"));
+    }
+
+    //React.render(<ParticipantList />,document.getElementById("ParticipantListContainer"));
+    $(".ShowBtn").click(function(){
+        $(this).toggleClass("HideBtn").next().toggle(300);
+
+    });
+</script>
+</body>
+</html>
